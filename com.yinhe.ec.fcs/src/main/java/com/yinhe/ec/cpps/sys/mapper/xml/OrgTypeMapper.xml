@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.OrgTypeMapper">
+    <update id="updateOrgType">
+        update sa_org_type
+        <set>
+            <if test="code!=null and code!=''">
+                code=#{code},
+            </if>
+            <if test="name!=null and name!=''">
+                name=#{name},
+            </if>
+            <if test="orderId!=null">
+                order_id=#{orderId},
+            </if>
+            <if test="enable!=null">
+                enable=#{enable},
+            </if>
+            <if test="createBy!=null">
+                create_by=#{createBy},
+            </if>
+            <if test="createTime!=null">
+                create_time=#{createTime},
+            </if>
+            <if test="updateBy!=null">
+                update_by=#{updateBy},
+            </if>
+            <if test="updateTime!=null">
+                update_time=#{updateTime},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_org_type
+        <where>
+            <if test="cm.code != null and cm.code != ''">
+                and code=#{cm.code}
+            </if>
+            <if test="cm.name != null and cm.name != ''">
+                and name=#{cm.name}
+            </if>
+            <if test="cm.orderId != null and cm.orderId != ''">
+                and order_id=#{cm.orderId}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or code like CONCAT('%',#{cm.keyword},'%')
+                or name like CONCAT('%',#{cm.keyword},'%')
+                or order_id like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.OrgType" id="orgTypeMap">
+        <result property="id" column="id"/>
+        <result property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="orderId" column="order_id"/>
+        <result property="enable" column="enable"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                                        id,
+                                            code,
+                                            name,
+                                            order_id,
+                                            enable,
+                                            create_by,
+                                            (CASE WHEN sot.create_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sot.create_by) ELSE NULL END ) AS createUserName ,
+                                            create_time,
+                                            DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') as createTimeStr,
+                                            update_by,
+                                            (CASE WHEN sot.update_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sot.update_by) ELSE NULL END ) AS updateUserName ,
+                                            update_time,
+                                            DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') as updateTimeStr
+                    </sql>
+
+    <select id="queryOrgTypeList" parameterType="com.yinhe.ec.cpps.sys.model.OrgType" resultMap="orgTypeMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_org_type sot
+        where 1=1
+        <if test="orgType.id !=null">
+            and id=#{orgType.id}
+        </if>
+        <if test="orgType.code !=null and orgType.code!='' ">
+            and code=#{orgType.code}
+        </if>
+        <if test="orgType.name !=null and orgType.name!='' ">
+            and name=#{orgType.name}
+        </if>
+        <if test="orgType.orderId !=null">
+            and order_id=#{orgType.orderId}
+        </if>
+        <if test="orgType.enable !=null">
+            and enable=#{orgType.enable}
+        </if>
+        <if test="orgType.createBy !=null">
+            and create_by=#{orgType.createBy}
+        </if>
+        <if test="orgType.createTime !=null">
+            and create_time=#{orgType.createTime}
+        </if>
+        <if test="orgType.updateBy !=null">
+            and update_by=#{orgType.updateBy}
+        </if>
+        <if test="orgType.updateTime !=null">
+            and update_time=#{orgType.updateTime}
+        </if>
+    </select>
+    <insert id="addOrgType" parameterType="com.yinhe.ec.cpps.sys.model.OrgType" useGeneratedKeys="true"
+            keyProperty="id">
+    insert into sa_org_type (code,name,order_id,enable,create_by,create_time)
+      values (#{orgType.code},#{orgType.name},#{orgType.orderId},#{orgType.enable},#{orgType.createBy},now())
+    </insert>
+    <delete id="batchDelete" parameterType="com.yinhe.ec.cpps.sys.model.OrgType">
+        delete from sa_org_type where 1=1
+        <if test="idList!=null and idList.size>0">
+            and id in
+                <foreach collection="idList" open="(" separator="," close=")" item="id">
+                    #{id}
+                </foreach>
+        </if>
+    </delete>
+</mapper>

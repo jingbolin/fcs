@@ -1,0 +1,3 @@
+# 项目排除路径
+/com.yinhe.ec.fcs/target/
+/netty/target/

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${package.Mapper}.${table.mapperName}">
+
+    <cache eviction="LRU" flushInterval="60000" size="512" readOnly="true"/>
+	
+	<select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+		select id from ${table.name}
+		<where>
+            enable = 1
+#foreach($field in ${table.fields})
+			<if test="cm.${field.propertyName} != null and cm.${field.propertyName} != ''">
+				and ${field.name}=#{cm.${field.propertyName}}
+			</if>
+#end
+			<if test="cm.keyword != null and cm.keyword != ''">
+				and (
+				    false
+#foreach($field in ${table.fields})
+					or ${field.name} like CONCAT('%',#{cm.keyword},'%')
+#end
+				)
+			</if>
+		</where>
+		<if test="cm.orderBy != null and cm.orderBy != ''">
+			order by #{cm.orderBy}
+		</if>
+		<if test="cm.sortAsc != null and cm.sortAsc != ''">
+			#{cm.sortAsc}
+		</if>
+	</select>
+</mapper>

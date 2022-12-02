@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.MenuMapper">
+
+    <select id="queryRootMenu" parameterType="com.yinhe.ec.cpps.sys.model.Menu" resultMap="menuMap">
+        select
+            sr.uri uri,
+            sr.name resName,
+            <include refid="Base_Column_List"></include>
+        from sa_menu sm
+            left join sa_resource sr on sm.resource_id=sr.id
+        where 
+            p_menu_id is null
+    </select>
+    
+    <update id="updateMenu">
+        update sa_menu
+        <set>
+            <if test="resourceId!=null">
+                resource_id=#{resourceId},
+            </if>
+            <if test="menuTitle!=null and menuTitle!=''">
+                menu_title=#{menuTitle},
+            </if>
+            <if test="pMenuId!=null">
+                p_menu_id=#{pMenuId},
+            </if>
+            <if test="linkType!=null and linkType!=''">
+                link_type=#{linkType},
+            </if>
+            <if test="selectImg!=null and selectImg!=''">
+                select_img=#{selectImg},
+            </if>
+            <if test="unselectImg!=null and unselectImg!=''">
+                unselect_img=#{unselectImg},
+            </if>
+            <if test="orderId!=null">
+                order_id=#{orderId},
+            </if>
+            <if test="enable!=null">
+                enable=#{enable},
+            </if>
+            <if test="createBy!=null">
+                create_by=#{createBy},
+            </if>
+            <if test="createTime!=null">
+                create_time=#{createTime},
+            </if>
+            <if test="updateBy!=null">
+                update_by=#{updateBy},
+            </if>
+            <if test="updateTime!=null">
+                update_time=#{updateTime},
+            </if>
+            <if test="menuType!=null">
+                menu_type=#{menuType},
+            </if>
+            <if test="menuClassify!=null">
+                menu_classify= #{menuClassify},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_menu
+        <where>
+            <if test="cm.resourceId != null and cm.resourceId != ''">
+                and resource_id=#{cm.resourceId}
+            </if>
+            <if test="cm.menuTitle != null and cm.menuTitle != ''">
+                and menu_title=#{cm.menuTitle}
+            </if>
+            <if test="cm.pMenuId != null and cm.pMenuId != ''">
+                and p_menu_id=#{cm.pMenuId}
+            </if>
+            <if test="cm.linkType != null and cm.linkType != ''">
+                and link_type=#{cm.linkType}
+            </if>
+            <if test="cm.selectImg != null and cm.selectImg != ''">
+                and select_img=#{cm.selectImg}
+            </if>
+            <if test="cm.unselectImg != null and cm.unselectImg != ''">
+                and unselect_img=#{cm.unselectImg}
+            </if>
+            <if test="cm.orderId != null and cm.orderId != ''">
+                and order_id=#{cm.orderId}
+            </if>
+            <if test="cm.menuType != null and cm.menuType != ''">
+                and menu_type=#{cm.menuType}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or resource_id like CONCAT('%',#{cm.keyword},'%')
+                or menu_title like CONCAT('%',#{cm.keyword},'%')
+                or p_menu_id like CONCAT('%',#{cm.keyword},'%')
+                or link_type like CONCAT('%',#{cm.keyword},'%')
+                or select_img like CONCAT('%',#{cm.keyword},'%')
+                or unselect_img like CONCAT('%',#{cm.keyword},'%')
+                or order_id like CONCAT('%',#{cm.keyword},'%')
+                or menu_type like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.Menu" id="menuMap">
+        <result property="id" column="id"/>
+        <result property="resourceId" column="resource_id"/>
+        <result property="menuTitle" column="menu_title"/>
+        <result property="pMenuId" column="p_menu_id"/>
+        <result property="linkType" column="link_type"/>
+        <result property="menuType" column="menu_type"/>
+        <result property="menuClassify" column="menu_classify"/>
+        <result property="selectImg" column="select_img"/>
+        <result property="unselectImg" column="unselect_img"/>
+        <result property="orderId" column="order_id"/>
+        <result property="enable" column="enable"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        sm.id,
+                                            sm.resource_id,
+                                            sm.menu_title,
+                                            sm.p_menu_id,
+                                            sm.link_type,
+                                            sm.menu_type,
+                                            sm.menu_classify,
+                                            sm.select_img,
+                                            sm.unselect_img,
+                                            sm.order_id,
+                                            sm.enable,
+                                            sm.create_by,
+                                            (CASE WHEN sm.create_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sm.create_by) ELSE NULL END ) AS createUserName ,
+                                            sm.create_time,
+                                            DATE_FORMAT(sm.create_time, '%Y-%m-%d %H:%i:%s') as createTimeStr,
+                                            sm.update_by,
+                                            (CASE WHEN sm.update_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sm.update_by) ELSE NULL END ) AS updateUserName ,
+                                            sm.update_time,
+                                            DATE_FORMAT(sm.update_time, '%Y-%m-%d %H:%i:%s') as updateTimeStr
+    </sql>
+
+    <select id="queryMenuList" parameterType="com.yinhe.ec.cpps.sys.model.Menu" resultMap="menuMap">
+        select
+        sr.uri uri,
+        sr.name resName,
+        <include refid="Base_Column_List"></include>
+        from sa_menu sm
+                left join sa_resource sr on sm.resource_id=sr.id
+                where 1=1
+                <if test="menu!=null">
+                    <if test="menu.id !=null">
+                        and sm.id=#{menu.id}
+                    </if>
+                    <choose>
+                        <when test="menu.resourceId !=null">
+                            and resource_id=#{menu.resourceId}
+                        </when>
+                        <otherwise>
+                            <if test="menu.resourceIdList !=null and menu.resourceIdList.size>0">
+                                and resource_id in
+                                <foreach collection="menu.resourceIdList" separator="," open="(" close=")"
+                                         item="resourceId">
+                                    #{resourceId}
+                                </foreach>
+                            </if>
+                        </otherwise>
+                    </choose>
+                    <if test="menu.menuTitle !=null and menu.menuTitle!='' ">
+                        and menu_title=#{menu.menuTitle}
+                    </if>
+                    <if test="menu.pMenuId !=null">
+                        and p_menu_id=#{menu.pMenuId}
+                    </if>
+                    <if test="menu.linkType !=null and menu.linkType!='' ">
+                        and link_type=#{menu.linkType}
+                    </if>
+                    <if test="menu.menuType !=null">
+                        and menu_type=#{menu.menuType}
+                    </if>
+                    <if test="menu.menuClassify!=null">
+                        AND menu_classify= #{menu.menuClassify}
+                    </if>
+                    <if test="menu.selectImg !=null and menu.selectImg!='' ">
+                        and select_img=#{menu.selectImg}
+                    </if>
+                    <if test="menu.unselectImg !=null and menu.unselectImg!='' ">
+                        and unselect_img=#{menu.unselectImg}
+                    </if>
+                    <if test="menu.orderId !=null">
+                        and order_id=#{menu.orderId}
+                    </if>
+                    <if test="menu.enable !=null">
+                        and sm.enable=#{menu.enable}
+                    </if>
+                    <if test="menu.createBy !=null">
+                        and create_by=#{menu.createBy}
+                    </if>
+                    <if test="menu.createTime !=null">
+                        and create_time=#{menu.createTime}
+                    </if>
+                    <if test="menu.updateBy !=null">
+                        and update_by=#{menu.updateBy}
+                    </if>
+                    <if test="menu.updateTime !=null">
+                        and update_time=#{menu.updateTime}
+                    </if>
+                    <if test="menu.pMenuIdList !=null and menu.pMenuIdList.size>0">
+                        and p_menu_id in
+                        <foreach collection="menu.pMenuIdList" item="pMenuId" open="(" close=")" separator=",">
+                            #{pMenuId}
+                        </foreach>
+                    </if>
+                    <if test="menu.queryParentMenu!=null and menu.queryParentMenu==1">
+                        and p_menu_id is null
+                    </if>
+                        <if test="menu.idList!=null and menu.idList.size>0">
+                            and sm.id in
+                                <foreach collection="menu.idList" item="id" open="(" separator="," close=")">
+                                    #{id}
+                                </foreach>
+                        </if>
+                </if>
+    </select>
+    <select id="queryMenuByAccount"  resultMap="menuMap">
+        SELECT distinct
+        menu.ID id,
+        menu_title,
+        p_menu_id,
+        link_type,
+        menu_type,
+        select_img,
+        unselect_img,
+        order_id,
+        sr.uri uri,
+        sr.name resName,
+        menu.enable,
+        menu.menu_classify
+        FROM
+        sa_menu menu
+        LEFT JOIN sa_resource sr ON menu.resource_id = sr.
+        ID LEFT JOIN sa_permission_resource spr ON sr.ID = spr.resource_id
+        LEFT JOIN sa_role_permission srp ON spr.permission_id = srp.permission_id
+        LEFT JOIN sa_user_role sur ON srp.role_id = sur.role_id left join sa_user su on sur.user_id=su.id
+        WHERE 1 = 1 and menu.enable = true
+        <if test="account!=null">
+            AND su.account= #{account}
+        </if>
+        order by id
+    </select>
+    <insert id="addMenu" parameterType="com.yinhe.ec.cpps.sys.model.Menu" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sa_menu
+        (resource_id, menu_title, p_menu_id, link_type, menu_type,menu_classify, select_img, unselect_img, order_id,
+         enable, create_by, create_time)
+        values (#{menu.resourceId}, #{menu.menuTitle}, #{menu.pMenuId}, #{menu.linkType}, #{menu.menuType},#{menu.menuClassify},
+                #{menu.selectImg}, #{menu.unselectImg}, #{menu.orderId}, #{menu.enable}, #{menu.createBy}, now())
+    </insert>
+    
+</mapper>

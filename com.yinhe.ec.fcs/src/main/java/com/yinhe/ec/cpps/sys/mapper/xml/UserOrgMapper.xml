@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.UserOrgMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.UserOrg" id="userOrgMap">
+        <result property="userId" column="user_id"/>
+        <result property="orgId" column="org_id"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                                        user_id,
+                                            org_id
+                    </sql>
+
+    <select id="queryUserOrgList" parameterType="com.yinhe.ec.cpps.sys.model.UserOrg" resultMap="userOrgMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_user_org
+        where 1=1
+        <if test="userOrg.userId !=null">
+            and user_id=#{userOrg.userId}
+        </if>
+        <if test="userOrg.orgId !=null">
+            and org_id=#{userOrg.orgId}
+        </if>
+    </select>
+    <insert id="insert" parameterType="com.yinhe.ec.cpps.sys.model.UserOrg">
+        insert into sa_user_org (user_id,org_id) values (#{userOrg.userId},#{userOrg.orgId})
+    </insert>
+    <delete id="batchDeleteUserOrg">
+        delete from sa_user_org where 1=1
+        <if test="userIdList!=null and userIdList.size>0">
+            and user_id in
+            <foreach collection="userIdList" open="(" close=")" item="userId">
+                #{userId}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

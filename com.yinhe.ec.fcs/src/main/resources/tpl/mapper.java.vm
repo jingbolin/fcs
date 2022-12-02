@@ -1,0 +1,16 @@
+package ${package.Mapper};
+
+import ${package.Entity}.${entity};
+import ${superMapperClassPackage};
+import org.apache.ibatis.annotations.CacheNamespaceRef;
+/**
+ * Mapper接口
+ *
+ * @author ${author}
+ * @date ${date}
+ * @since 1.8
+ */
+@CacheNamespaceRef(${table.mapperName}.class)
+public interface ${table.mapperName} extends ${superMapperClass}<${entity}> {
+
+}

@@ -1,0 +1,4 @@
+/swagger-ui.html
+/doc.html
+/v2/api-docs
+/webjars/bycdao-ui

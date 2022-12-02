@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.OrgMapper">
+    <update id="updateOrg">
+        update sa_org
+        <set>
+            <if test="title!=null and title!=''">
+                title=#{title},
+            </if>
+            <if test="orgTypeId!=null">
+                org_type_id=#{orgTypeId},
+            </if>
+            <if test="parentId!=null">
+                parent_id=#{parentId},
+            </if>
+            <if test="orgTree!=null and orgTree!=''">
+                org_tree=#{orgTree},
+            </if>
+            <if test="orderId!=null">
+                order_id=#{orderId},
+            </if>
+            <if test="enable!=null">
+                enable=#{enable},
+            </if>
+            <if test="createBy!=null">
+                create_by=#{createBy},
+            </if>
+            <if test="createTime!=null">
+                create_time=#{createTime},
+            </if>
+            <if test="updateBy!=null">
+                update_by=#{updateBy},
+            </if>
+            <if test="updateTime!=null">
+                update_time=#{updateTime},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_org
+        <where>
+            <if test="cm.title != null and cm.title != ''">
+                and title=#{cm.title}
+            </if>
+            <if test="cm.orgTypeId != null and cm.orgTypeId != ''">
+                and org_type_id=#{cm.orgTypeId}
+            </if>
+            <if test="cm.parentId != null and cm.parentId != ''">
+                and parent_id=#{cm.parentId}
+            </if>
+            <if test="cm.orgTree != null and cm.orgTree != ''">
+                and org_tree=#{cm.orgTree}
+            </if>
+            <if test="cm.orderId != null and cm.orderId != ''">
+                and order_id=#{cm.orderId}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or title like CONCAT('%',#{cm.keyword},'%')
+                or org_type_id like CONCAT('%',#{cm.keyword},'%')
+                or parent_id like CONCAT('%',#{cm.keyword},'%')
+                or org_tree like CONCAT('%',#{cm.keyword},'%')
+                or order_id like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.Org" id="orgMap">
+        <result property="id" column="id"/>
+        <result property="orgTypeId" column="org_type_id"/>
+        <result property="title" column="title"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="orgTree" column="org_tree"/>
+        <result property="orderId" column="order_id"/>
+        <result property="enable" column="enable"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id,
+                                            title,
+                                            org_type_id,
+                                            parent_id,
+                                            org_tree,
+                                            order_id,
+                                            enable,
+                                            create_by,
+                                            (CASE WHEN so.create_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = so.create_by) ELSE NULL END ) AS createUserName ,
+                                            create_time,
+                                            DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') as createTimeStr,
+                                            update_by,
+                                            (CASE WHEN so.update_by is  not NULL THEN ( SELECT user_name FROM sa_user WHERE id = so.update_by ) ELSE NULL END ) AS updateUserName,
+                                            update_time,
+                                            DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') as updateTimeStr
+    </sql>
+    
+    <select id="queryStationList" parameterType="com.yinhe.ec.cpps.sys.model.Org"
+            resultType="map">
+        select
+        ap.*
+        <if test="org.assigned!=null and org.assigned==1">
+            ,aopr.org_id
+        </if>
+        from ast_psr ap
+        <if test="org.assigned!=null and org.assigned==1">
+            left join sa_org_ast_psr aopr on aopr.psr_id=ap.id
+        </if>
+        where 1=1
+        <if test="org.assigned!=null">
+            <if test="org.assigned==1">
+                <if test="org.userId!=null">
+                    and uo.user_id=#{org.userId}
+                </if>
+                <if test="org.orgIdList!=null and org.orgIdList.size>0">
+                    and aopr.org_id in
+                    <foreach collection="org.orgIdList" open="(" separator="," close=")" item="orgId">
+                        #{orgId}
+                    </foreach>
+                </if>
+            </if>
+            <if test="org.assigned==2">
+                and ap.ast_psr_type_id=12000000000000001
+                <if test="org.orgIdList!=null and org.orgIdList.size>0">
+                    and ap.id not in (select psr_id from sa_org_ast_psr where org_id in
+                    <foreach collection="org.orgIdList" open="(" separator="," close=")" item="orgId">
+                        #{orgId}
+                    </foreach>
+                    )
+                </if>
+            </if>
+        </if>
+    </select>
+    
+    <select id="queryOrgList" parameterType="com.yinhe.ec.cpps.sys.model.Org" resultMap="orgMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from
+        sa_org so
+        <if test="org!=null and org.userId!=null">
+            left join sa_user_org uo on so.id=uo.org_id
+        </if>
+        where 1=1
+        <if test="org!=null">
+            <if test="org.userId!=null">
+                and uo.user_id=#{org.userId}
+            </if>
+            <if test="org.id !=null">
+                and id=#{org.id}
+            </if>
+            <if test="org.title !=null and org.title!='' ">
+                and title like concat('%','${org.title}','%')
+            </if>
+            <if test="org.orgTypeId !=null">
+                and org_type_id=#{org.orgTypeId}
+            </if>
+            <if test="org.parentId !=null">
+                and parent_id=#{org.parentId}
+            </if>
+            <if test="org.parentId ==null and org.queryParent==1">
+                and parent_id is null
+            </if>
+            <if test="org.parentId ==null and org.queryParent==2">
+                and parent_id is not null
+            </if>
+            <if test="org.orgTree !=null and org.orgTree!='' ">
+                and org_tree=#{org.orgTree}
+            </if>
+            <if test="org.orderId !=null">
+                and order_id=#{org.orderId}
+            </if>
+            <if test="org.enable !=null">
+                and enable=#{org.enable}
+            </if>
+            <if test="org.createBy !=null">
+                and create_by=#{org.createBy}
+            </if>
+            <if test="org.createTime !=null">
+                and create_time=#{org.createTime}
+            </if>
+            <if test="org.updateBy !=null">
+                and update_by=#{org.updateBy}
+            </if>
+            <if test="org.updateTime !=null">
+                and update_time=#{org.updateTime}
+            </if>
+            <if test="org.parentIdList !=null and org.parentIdList.size>0">
+                and parent_id in
+                <foreach collection="org.parentIdList" open="(" separator="," close=")" item="parentId">
+                    #{parentId}
+                </foreach>
+            </if>
+            <if test="org.orgTypeIdList !=null and org.orgTypeIdList.size>0">
+                and org_type_id in
+                <foreach collection="org.orgTypeIdList" open="(" separator="," close=")" item="orgTypeId">
+                    #{orgTypeId}
+                </foreach>
+            </if>
+        </if>
+        order by order_id
+    </select>
+
+    <insert id="addOrg" parameterType="com.yinhe.ec.cpps.sys.model.Org" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sa_org
+        (title, org_type_id, parent_id, org_tree, order_id,
+         enable, create_by, create_time)
+        values (#{org.title}, #{org.orgTypeId}, #{org.parentId}, #{org.orgTree}, #{org.orderId}, #{org.enable},
+                #{org.createBy}, now())
+    </insert>
+    
+    <delete id="deleteOrgPsr">
+        delete from sa_org_ast_psr where 1=1
+        <if test="orgId!=null">
+            and org_id=#{orgId}
+        </if>
+        <if test="psrId!=null">
+            and psr_id=#{psrId}
+        </if>
+    </delete>
+    
+    <insert id="batchSaveOrgPsr">
+        <if test="stationIdList!=null and stationIdList.size>0">
+            insert into sa_org_ast_psr
+            (psr_id,org_id,create_time,create_by,enable)
+            values
+            <foreach collection="stationIdList" separator="," item="stationId">
+                (#{stationId},#{orgId},now(),#{createBy},true)
+            </foreach>
+        </if>
+    </insert>
+    
+</mapper>

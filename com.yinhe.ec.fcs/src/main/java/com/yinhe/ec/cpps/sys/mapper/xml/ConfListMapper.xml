@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.ConfListMapper">
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_conf_list
+        <where>
+            <if test="cm.confListCode != null and cm.confListCode != ''">
+                and conf_list_code=#{cm.confListCode}
+            </if>
+            <if test="cm.confTypeCode != null and cm.confTypeCode != ''">
+                and conf_type_code=#{cm.confTypeCode}
+            </if>
+            <if test="cm.confListName != null and cm.confListName != ''">
+                and conf_list_name=#{cm.confListName}
+            </if>
+            <if test="cm.confListValue != null and cm.confListValue != ''">
+                and conf_list_value=#{cm.confListValue}
+            </if>
+            <if test="cm.isDelete != null and cm.isDelete != ''">
+                and is_delete=#{cm.isDelete}
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by #{cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            #{cm.sortAsc}
+        </if>
+    </select>
+    <resultMap type="com.yinhe.ec.cpps.sys.model.ConfList" id="confListMap">
+        <result property="confListCode" column="conf_list_code"/>
+        <result property="confTypeCode" column="conf_type_code"/>
+        <result property="confListName" column="conf_list_name"/>
+        <result property="confListValue" column="conf_list_value"/>
+        <result property="isDelete" column="is_delete"/>
+        <result property="valueList" column="value_list"/>
+        <result property="pattern" column="pattern"/>
+        <result property="msg" column="msg"/>
+        <result property="id" column="id"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id,conf_list_code,conf_type_code,conf_list_name,conf_list_value,is_delete,value_list,pattern,msg
+    </sql>
+    <select id="queryConfListList" parameterType="com.yinhe.ec.cpps.sys.model.ConfList" resultMap="confListMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_conf_list
+        where 1=1
+        <if test="confList != null">
+            <if test="confList.confListCode !=null and confList.confListCode!='' ">
+                and conf_list_code like concat('%',#{confList.confListCode},'%')
+            </if>
+            <if test="confList.confTypeCode !=null and confList.confTypeCode!='' ">
+                and conf_type_code like concat('%',#{confList.confTypeCode},'%')
+            </if>
+            <if test="confList.confListName !=null and confList.confListName!='' ">
+                and conf_list_name like concat('%',#{confList.confListName},'%')
+            </if>
+            <if test="confList.confListValue !=null and confList.confListValue!='' ">
+                and conf_list_value like concat('%',#{confList.confListValue},'%')
+            </if>
+            <if test="confList.isDelete !=null and confList.isDelete!='' ">
+                and is_delete like concat('%',#{confList.isDelete},'%')
+            </if>
+        </if>
+        order by id
+    </select>
+    <!--根据条件修改confList-->
+    <update id="updateConfList">
+        update sa_conf_list
+        <set>
+            <if test="confList.confTypeCode!=null and confList.confTypeCode!=''">
+                conf_type_code=#{confList.confTypeCode},
+            </if>
+            <if test="confList.confListName!=null and confList.confListName!=''">
+                conf_list_name=#{confList.confListName},
+            </if>
+            <if test="confList.confListValue!=null and confList.confListValue!=''">
+                conf_list_value=#{confList.confListValue},
+            </if>
+            <if test="confList.isDelete!=null and confList.isDelete!=''">
+                is_delete=#{confList.isDelete},
+            </if>
+        </set>
+        where conf_list_code=#{confList.confListCode}
+    </update>
+</mapper>

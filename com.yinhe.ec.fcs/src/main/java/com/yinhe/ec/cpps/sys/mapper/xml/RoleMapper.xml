@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.RoleMapper">
+    
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_role
+        <where>
+            <if test="cm.roleName != null and cm.roleName != ''">
+                and role_name=#{cm.roleName}
+            </if>
+            <if test="cm.roleType != null and cm.roleType != ''">
+                and role_type=#{cm.roleType}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or role_name like CONCAT('%',#{cm.keyword},'%')
+                or role_type like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.Role" id="roleMap">
+        <result property="id" column="id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="roleType" column="role_type"/>
+        <result property="enable" column="enable"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        sr.id,
+                                            sr.role_name,
+                                            sr.role_type,
+                                            sr.enable,
+                                            sr.create_by,
+	                                        (CASE WHEN sr.create_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sr.create_by) ELSE NULL END ) AS createUserName ,
+                                            sr.create_time,
+                                            DATE_FORMAT(sr.create_time, '%Y-%m-%d %H:%i:%s') as createTimeStr,
+                                            sr.update_by,
+                                            (CASE WHEN sr.update_by is  not NULL THEN ( SELECT user_name FROM sa_user WHERE id = sr.update_by ) ELSE NULL END ) AS updateUserName,
+                                            sr.update_time,
+                                            DATE_FORMAT(sr.update_time, '%Y-%m-%d %H:%i:%s') as updateTimeStr
+    </sql>
+
+    <select id="queryRoleList" parameterType="com.yinhe.ec.cpps.sys.model.Role" resultMap="roleMap">
+        select
+        <if test="role.idList!=null and role.idList.size>0 and role.relevanceUser!=null and role.relevanceUser==1">
+            substr( group_concat( su.account ),2,LENGTH ( group_concat( su.account ) ) - 2 ) usernameList,
+        </if>
+        <if test="role.idList!=null and role.idList.size>0 and role.relevancePermission!=null and role.relevancePermission==1">
+            substr( group_concat(sp.permission_name ),2,LENGTH ( group_concat( sp.permission_name ) ) - 2 ) permissionNameList,
+        </if>
+        <include refid="Base_Column_List"></include>
+        from sa_role sr
+        <if test="role.userId !=null  and (role.assigned==1 or role.assigned==2)">
+            LEFT join sa_user_role sur on sr.id=sur.role_id
+        </if>
+        <if test="role.idList!=null and role.idList.size>0 and role.relevanceUser!=null and role.relevanceUser==1">
+            LEFT join sa_user_role sur on sr.id=sur.role_id
+            left join sa_user su on sur.user_id=su.id
+        </if>
+        <if test="role.idList!=null and role.idList.size>0 and role.relevancePermission!=null and role.relevancePermission==1">
+            LEFT JOIN sa_role_permission srp ON sr.ID = srp.role_id
+            LEFT JOIN sa_permission sp ON srp.permission_id = sp.id
+        </if>
+        where 1=1
+        <choose>
+            <when test="role.assigned==1 or role.assigned==2">
+                <if test="role.userId !=null  and role.assigned==1">
+                    and sur.user_id=#{role.userId}
+                </if>
+                <if test="role.userId !=null  and role.assigned==2">
+                    and NOT EXISTS (SELECT * FROM sa_user_role sur WHERE sur.user_id = #{role.userId} AND sr.id =
+                    sur.role_id )
+                </if>
+            </when>
+            <otherwise>
+                <if test="role.idList!=null and role.idList.size>0 and ((role.relevanceUser!=null and role.relevanceUser==1) or (role.relevancePermission!=null and role.relevancePermission==1))">
+                    <if test="role.relevanceUser!=null and role.relevanceUser==1">
+                        and sur.role_id in
+                    </if>
+                    <if test="role.relevancePermission!=null and role.relevancePermission==1">
+                        and sp.permission_name is not null and srp.role_id in
+                    </if>
+                    <foreach collection="role.idList" open="(" item="id" separator="," close=")">
+                        #{id}
+                    </foreach>
+                    group by sr.id
+                </if>
+                <if test="role.id !=null">
+                    and id=#{role.id}
+                </if>
+                <if test="role.roleName !=null and role.roleName!='' ">
+                    and role_name like CONCAT('%',#{role.roleName},'%')
+                </if>
+                <if test="role.roleType !=null and role.roleType!='' ">
+                    and role_type=#{role.roleType}
+                </if>
+                <if test="role.enable !=null">
+                    and enable=#{role.enable}
+                </if>
+                <if test="role.createBy !=null">
+                    and create_by=#{role.createBy}
+                </if>
+                <if test="role.createTime !=null">
+                    and create_time=#{role.createTime}
+                </if>
+                <if test="role.updateBy !=null">
+                    and update_by=#{role.updateBy}
+                </if>
+                <if test="role.updateTime !=null">
+                    and update_time=#{role.updateTime}
+                </if>
+                order by role_name asc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getRoleStrByUserId" resultType="java.lang.String">
+        SELECT
+        roleNames
+        FROM
+        (
+        SELECT
+        substr( group_concat( role_name ), 2, LENGTH ( group_concat( role_name ) ) - 2 ) AS roleNames
+        FROM
+        sa_role sr
+        LEFT JOIN sa_user_role sur ON sr.ID = sur.role_id
+        WHERE 1=1
+        <if test="userId!=null">
+            and sur.user_id = #{userId}
+        </if>
+        ) ROLE
+        WHERE
+        roleNames != '{}'
+    </select>
+    <insert id="insertRole" parameterType="com.yinhe.ec.cpps.sys.model.Role" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sa_role
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="role.roleName !=null and role.roleName!='' ">
+                role_name,
+            </if>
+            <if test="role.roleType !=null and role.roleType!='' ">
+                role_type,
+            </if>
+            <if test="role.enable !=null ">
+                enable,
+            </if>
+            <if test="role.createBy !=null ">
+                create_by,
+            </if>
+            create_time
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="role.roleName !=null and role.roleName!='' ">
+                #{role.roleName},
+            </if>
+            <if test="role.roleType !=null and role.roleType!='' ">
+                #{role.roleType},
+            </if>
+            <if test="role.enable !=null ">
+                #{role.enable},
+            </if>
+            <if test="role.createBy !=null ">
+                #{role.createBy},
+            </if>
+            now()
+        </trim>
+    </insert>
+    <!--根据主键批量删除角色-->
+    <delete id="batchDelete">
+        delete
+        from sa_role
+        where 1=1
+        <if test="null!=idList and idList.size>0">
+            and id in
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+    <!-- 查询未分配的角色 -->
+    <select id="unAssignedRoleList" resultMap="roleMap">
+        SELECT
+		    sr.* 
+		FROM
+		    sa_role sr 
+		WHERE
+		    sr.id NOT IN ( SELECT sur.role_id FROM sa_user_role sur WHERE sur.user_id = #{userId} )
+    </select>
+</mapper>

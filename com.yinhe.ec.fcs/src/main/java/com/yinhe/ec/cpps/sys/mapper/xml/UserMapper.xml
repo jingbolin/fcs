@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.UserMapper">
+    <delete id="batchDeleteUser">
+        delete from sa_user
+        where 1=1
+        <if test="idList!=null and idList.size>0">
+            and id in
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_user
+        <where>
+            <if test="cm.account != null and cm.account != ''">
+                <choose>
+                    <when test="cm.handleFlag!=null and cm.handleFlag==2 and cm.id!=null">
+                        id != #{cm.id} and  account=#{cm.account}
+                    </when>
+                    <otherwise>
+                        and account=#{cm.account}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="cm.password != null and cm.password != ''">
+                and password=#{cm.password}
+            </if>
+            <if test="cm.userType != null and cm.userType != ''">
+                and user_type=#{cm.userType}
+            </if>
+            <if test="cm.userName != null and cm.userName != ''">
+                <choose>
+                    <when test="cm.handleFlag!=null and cm.handleFlag==2 and cm.id!=null">
+                        id != #{cm.id} and  user_name=#{cm.userName}
+                    </when>
+                    <otherwise>
+                        and user_name=#{cm.userName}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="cm.tel != null and cm.tel != ''">
+                <choose>
+                    <when test="cm.handleFlag!=null and cm.handleFlag==2 and cm.id!=null">
+                        id != #{cm.id} and  tel=#{cm.tel}
+                    </when>
+                    <otherwise>
+                        and tel=#{cm.tel}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="cm.mail != null and cm.mail != ''">
+                and mail=#{cm.mail}
+            </if>
+            <if test="cm.isLock != null and cm.isLock != ''">
+                and is_lock=#{cm.isLock}
+            </if>
+            <if test="cm.lockTime != null and cm.lockTime != ''">
+                and lock_time=#{cm.lockTime}
+            </if>
+            <if test="cm.failCount != null and cm.failCount != ''">
+                and fail_count=#{cm.failCount}
+            </if>
+            <if test="cm.hPassword1 != null and cm.hPassword1 != ''">
+                and h_password1=#{cm.hPassword1}
+            </if>
+            <if test="cm.hPassword2 != null and cm.hPassword2 != ''">
+                and h_password2=#{cm.hPassword2}
+            </if>
+            <if test="cm.hPassword3 != null and cm.hPassword3 != ''">
+                and h_password3=#{cm.hPassword3}
+            </if>
+            <if test="cm.hPassword4 != null and cm.hPassword4 != ''">
+                and h_password4=#{cm.hPassword4}
+            </if>
+            <if test="cm.hPassword5 != null and cm.hPassword5 != ''">
+                and h_password5=#{cm.hPassword5}
+            </if>
+            <if test="cm.hPassword6 != null and cm.hPassword6 != ''">
+                and h_password6=#{cm.hPassword6}
+            </if>
+            <if test="cm.customerId != null and cm.customerId != ''">
+                and customer_id=#{customerId}
+            </if>
+            <if test="cm.jobNum != null and cm.jobNum != ''">
+                <choose>
+                    <when test="cm.handleFlag!=null and cm.handleFlag==2 and cm.id!=null">
+                        id != #{cm.id} and  job_num=#{cm.jobNum}
+                    </when>
+                    <otherwise>
+                        and job_num=#{cm.jobNum}
+                    </otherwise>
+                </choose>
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or account like CONCAT('%',#{cm.keyword},'%')
+                or password like CONCAT('%',#{cm.keyword},'%')
+                or user_type like CONCAT('%',#{cm.keyword},'%')
+                or user_name like CONCAT('%',#{cm.keyword},'%')
+                or tel like CONCAT('%',#{cm.keyword},'%')
+                or mail like CONCAT('%',#{cm.keyword},'%')
+                or is_lock like CONCAT('%',#{cm.keyword},'%')
+                or lock_time like CONCAT('%',#{cm.keyword},'%')
+                or fail_count like CONCAT('%',#{cm.keyword},'%')
+                or h_password1 like CONCAT('%',#{cm.keyword},'%')
+                or h_password2 like CONCAT('%',#{cm.keyword},'%')
+                or h_password3 like CONCAT('%',#{cm.keyword},'%')
+                or h_password4 like CONCAT('%',#{cm.keyword},'%')
+                or h_password5 like CONCAT('%',#{cm.keyword},'%')
+                or h_password6 like CONCAT('%',#{cm.keyword},'%')
+                or job_num like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.User" id="userMap">
+        <result property="id" column="id"/>
+        <result property="account" column="account"/>
+        <result property="password" column="password"/>
+        <result property="userType" column="user_type"/>
+        <result property="userName" column="user_name"/>
+        <result property="tel" column="tel"/>
+        <result property="mail" column="mail"/>
+        <result property="isLock" column="is_lock"/>
+        <result property="lockTime" column="lock_time"/>
+        <result property="failCount" column="fail_count"/>
+        <result property="hPassword1" column="h_password1"/>
+        <result property="hPassword2" column="h_password2"/>
+        <result property="hPassword3" column="h_password3"/>
+        <result property="hPassword4" column="h_password4"/>
+        <result property="hPassword5" column="h_password5"/>
+        <result property="hPassword6" column="h_password6"/>
+        <result property="enable" column="enable"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="lastPasswordUpdateDate" column="last_password_update_date"/>
+        <result property="jobNum" column="job_num"/>
+        <result property="customerId" column="customer_id"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        su.id,
+        su.account,
+        su.password,
+        su.user_type,
+        su.user_name,
+        su.job_num,
+        su.tel,
+        su.mail,
+        su.is_lock,
+        su.lock_time,
+        su.fail_count,
+        su.h_password1,
+        su.h_password2,
+        su.h_password3,
+        su.h_password4,
+        su.h_password5,
+        su.h_password6,
+        su.customer_id,
+        su.enable,
+        su.create_by,
+        (CASE WHEN su.create_by is not NULL THEN (SELECT user_name FROM sa_user WHERE id = su.create_by) ELSE
+        NULL END ) AS createUserName,
+        DATE_FORMAT(su.create_time, '%Y-%m-%d %H:%i:%s') as createTimeStr,
+        su.update_by,
+        (CASE WHEN su.update_by is not NULL THEN ( SELECT user_name FROM sa_user WHERE id = su.update_by ) ELSE
+        NULL END ) AS updateUserName,
+        su.update_time,
+        DATE_FORMAT(su.update_time, '%Y-%m-%d %H:%i:%s') as updateTimeStr,
+        su.last_password_update_date
+    </sql>
+    <select id="queryUserList" resultMap="userMap">
+        select
+        <if test="!(user.roleId!=null and user.assignedUser!=null and (user.assignedUser==1 or user.assignedUser==2))">
+            so.id orgId,
+            so.title title,
+        </if>
+        <include refid="Base_Column_List"></include>
+        from sa_user su
+        <choose>
+            <when test="user.roleId!=null and user.assignedUser!=null and (user.assignedUser==1 or user.assignedUser==2)">
+                where
+                <if test="user.assignedUser==1">
+                    EXISTS (select * from sa_user_role sur where sur.role_id=#{user.roleId} and
+                    su.id=sur.user_id)
+                </if>
+                <if test="user.assignedUser==2">
+                    not EXISTS (select * from sa_user_role sur where sur.role_id=#{user.roleId} and
+                    su.id=sur.user_id)
+                </if>
+            </when>
+            <otherwise>
+                left join sa_user_org suo on su.id=suo.user_id
+                left join sa_org so on suo.org_id=so.id
+                where 1=1
+                <if test="user.orgId !=null">
+                    and suo.org_id=#{user.orgId}
+                </if>
+                <if test="user.orgIdList !=null and user.orgIdList.size>0">
+                    and suo.org_id in
+                    <foreach collection="user.orgIdList" open="(" separator="," close=")" item="orgIdItem">
+                        #{orgIdItem}
+                    </foreach>
+                </if>
+                <if test="user.id !=null">
+                    and su.id=#{user.id}
+                </if>
+
+                <if test="user.account !=null and user.account!='' ">
+                    and su.account like concat('%',#{user.account},'%')
+                </if>
+                <if test="user.jobNum !=null and user.jobNum!='' ">
+                    and su.job_num like concat('%',#{user.jobNum},'%')
+                </if>
+                <if test="user.password !=null and user.password!='' ">
+                    and su.password like concat('%',#{user.password},'%')
+                </if>
+                <if test="user.userType !=null and user.userType!='' ">
+                    and su.user_type like concat('%',#{user.userType},'%')
+                </if>
+                <if test="user.userName !=null and user.userName!='' ">
+                    and su.user_name like concat('%',#{user.userName},'%')
+                </if>
+                <if test="user.tel !=null and user.tel!='' ">
+                    and su.tel like concat('%',#{user.tel},'%')
+                </if>
+                <if test="user.mail !=null and user.mail!='' ">
+                    and su.mail like concat('%',#{user.mail},'%')
+                </if>
+                <if test="user.isLock !=null">
+                    and su.is_lock=#{user.isLock}
+                </if>
+                <if test="user.lockTimeStart !=null">
+                    and su.lock_time &gt;= #{user.lockTimeStart}
+                </if>
+                <if test="user.lockTimeEnd !=null">
+                    and su.lock_time &lt;= #{user.lockTimeEnd}
+                </if>
+                <if test="user.failCount !=null">
+                    and su.fail_count=#{user.failCount}
+                </if>
+                <if test="user.hPassword1 !=null and user.hPassword1!='' ">
+                    and su.h_password1 like concat('%',#{user.hPassword1},'%')
+                </if>
+                <if test="user.hPassword2 !=null and user.hPassword2!='' ">
+                    and su.h_password2 like concat('%',#{user.hPassword2},'%')
+                </if>
+                <if test="user.hPassword3 !=null and user.hPassword3!='' ">
+                    and su.h_password3 like concat('%',#{user.hPassword3},'%')
+                </if>
+                <if test="user.hPassword4 !=null and user.hPassword4!='' ">
+                    and su.h_password4 like concat('%',#{user.hPassword4},'%')
+                </if>
+                <if test="user.hPassword5 !=null and user.hPassword5!='' ">
+                    and su.h_password5 like concat('%',#{user.hPassword5},'%')
+                </if>
+                <if test="user.hPassword6 !=null and user.hPassword6!='' ">
+                    and su.h_password6 like concat('%',#{user.hPassword6},'%')
+                </if>
+                <if test="user.customerId !=null and user.customerId!='' ">
+                    and su.customer_id like concat('%',#{user.customerId},'%')
+                </if>
+                <if test="user.enable !=null">
+                    and su.enable=#{user.enable}
+                </if>
+                <if test="user.createBy !=null">
+                    and su.create_by=#{user.createBy}
+                </if>
+                <if test="user.createTimeStart !=null">
+                    and su.create_time &gt;= #{user.createTimeStart}
+                </if>
+                <if test="user.createTimeEnd !=null">
+                    and su.create_time &lt;= #{user.createTimeEnd}
+                </if>
+                <if test="user.updateBy !=null">
+                    and su.update_by=#{user.updateBy}
+                </if>
+                <if test="user.updateTimeStart !=null">
+                    and su.update_time &gt;= #{user.updateTimeStart}
+                </if>
+                <if test="user.updateTimeEnd !=null">
+                    and su.update_time &lt;= #{user.updateTimeEnd}
+                </if>
+                order by user_name asc
+            </otherwise>
+        </choose>
+    </select>
+    <select id="batchQueryUserList" resultMap="userMap">
+        <if test="user.idList!=null and user.idList.size>0">
+	        select
+	        	<include refid="Base_Column_List"/>
+	        from 
+	        	sa_user su 
+	        where 
+	        	su.id in
+	            <foreach collection="user.idList" open="(" separator="," close=")" item="userId">
+	                #{userId}
+	            </foreach>
+        </if>
+    </select>
+    <select id="getUserByAccount" resultMap="userMap">
+        select
+        <include refid="Base_Column_List"/>
+        from sa_user su where 1=1
+        <if test="account!=null and account!='' ">
+            and account = #{account}
+        </if>
+        limit 1
+    </select>
+    <insert id="insertUser" parameterType="com.yinhe.ec.cpps.sys.model.User" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO sa_user (account, PASSWORD, user_type, user_name, tel, mail, is_lock, ENABLE, create_by,
+                                    create_time, job_num)
+        VALUES (#{ user.account },
+                #{ user.password }, #{ user.userType }, #{ user.userName }, #{ user.tel }, #{ user.mail },
+                #{user.isLock},
+                #{ user.enable }, #{ user.createBy},
+                now(),
+                #{user.jobNum})
+    </insert>
+    <update id="updateUser" parameterType="com.yinhe.ec.cpps.sys.model.User">
+        update sa_user
+        <set>
+            <if test="user.account != null and user.account != ''">
+                account = #{user.account},
+            </if>
+            <if test="user.password != null and user.password != ''">
+                password = #{user.password},
+            </if>
+            <if test="user.userType != null and user.userType != ''">
+                user_type = #{user.userType},
+            </if>
+            <if test="user.userName != null and user.userName != ''">
+                user_name = #{user.userName},
+            </if>
+            <if test="user.tel != null and user.tel != ''">
+                tel = #{user.tel},
+            </if>
+                mail = #{user.mail},
+            <if test="user.isLock != null">
+                is_lock = #{user.isLock},
+            </if>
+            <if test="user.lockTime != null">
+                lock_time = #{user.lockTime},
+            </if>
+            <if test="user.failCount != null">
+                fail_count = #{user.failCount},
+            </if>
+            <if test="user.hPassword1 != null and user.hPassword1 != ''">
+                h_password1 = #{user.hPassword1},
+            </if>
+            <if test="user.hPassword2 != null and user.hPassword2 != ''">
+                h_password2 = #{user.hPassword2},
+            </if>
+            <if test="user.hPassword3 != null and user.hPassword3 != ''">
+                h_password3 = #{user.hPassword3},
+            </if>
+            <if test="user.hPassword4 != null and user.hPassword4 != ''">
+                h_password4 = #{user.hPassword4},
+            </if>
+            <if test="user.hPassword5 != null and user.hPassword5 != ''">
+                h_password5 = #{user.hPassword5},
+            </if>
+            <if test="user.customerId != null and user.customerId != ''">
+                customer_id = #{user.customerId},
+            </if>
+            <if test="user.enable != null">
+                enable = #{user.enable},
+            </if>
+            <if test="user.createBy != null">
+                create_by = #{user.createBy},
+            </if>
+            <if test="user.updateBy != null">
+                update_by = #{user.updateBy},
+            </if>
+            update_time = now(),
+            <if test="user.jobNum != null and user.jobNum != ''">
+                job_num = #{user.jobNum},
+            </if>
+            <if test="user.createTime != null">
+                create_time = #{user.createTime},
+            </if>
+        </set>
+        where id = #{user.id}
+    </update>
+    
+    <select id="queryAllUser" resultType="com.yinhe.ec.cpps.sys.model.User">
+        select * from sa_user
+    </select>
+</mapper>

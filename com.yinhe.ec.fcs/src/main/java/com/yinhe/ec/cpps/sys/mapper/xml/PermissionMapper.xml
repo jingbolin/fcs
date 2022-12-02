@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.PermissionMapper">
+    <update id="updatePermission">
+        update sa_permission
+        <set>
+            <if test="permissionName!=null and permissionName!=''">
+                permission_name=#{permissionName},
+            </if>
+            <if test="groupId!=null">
+                group_id=#{groupId},
+            </if>
+            <if test="manager!=null">
+                is_manage=#{manager},
+            </if>
+            <if test="enable!=null">
+                enable=#{enable},
+            </if>
+            <if test="createBy!=null">
+                create_by=#{createBy},
+            </if>
+            <if test="createTime!=null">
+                create_time=#{createTime},
+            </if>
+            <if test="updateBy!=null">
+                update_by=#{updateBy},
+            </if>
+            <if test="updateTime!=null">
+                update_time=#{updateTime},
+            </if>
+            <if test="isDefault!=null">
+                is_default=#{isDefault},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_permission
+        <where>
+            <if test="cm.groupId != null and cm.groupId != ''">
+                and group_id=#{cm.groupId}
+            </if>
+            <if test="cm.permissionName != null and cm.permissionName != ''">
+                and permission_name=#{cm.permissionName}
+            </if>
+            <if test="cm.manager != null and cm.manager != ''">
+                and is_manager=#{cm.manager}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or group_id like CONCAT('%',#{cm.keyword},'%')
+                or permission_name like CONCAT('%',#{cm.keyword},'%')
+                or is_manager like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.Permission" id="permissionMap">
+        <result property="id" column="id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="permissionName" column="permission_name"/>
+        <result property="manager" column="is_manager"/>
+        <result property="enable" column="enable"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isDefault" column="is_default"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id,
+                                            group_id,
+                                            permission_name,
+                                            is_manager,
+                                            enable,
+                                            create_by,
+                                            (CASE WHEN sp.create_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sp.create_by) ELSE NULL END ) AS createUserName ,
+                                            create_time,
+                                            DATE_FORMAT(create_time, '%Y-%m-%d %H:%i:%s') as createTimeStr,
+                                            update_by,
+                                            (CASE WHEN sp.update_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sp.update_by) ELSE NULL END ) AS updateUserName ,
+                                            update_time,
+                                            DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') as updateTimeStr,
+                                            is_default
+    </sql>
+
+    <select id="queryPermissionList" parameterType="com.yinhe.ec.cpps.sys.model.Permission"
+            resultMap="permissionMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_permission sp
+        <choose>
+            <when test="permission.roleId !=null  and (permission.assigned==1 or permission.assigned==2)">
+                where 1=1
+                <if test="permission.assigned==1">
+                    and EXISTS (select * from sa_role_permission srp where srp.role_id=#{permission.roleId} and
+                    sp.id=srp.permission_id)
+                </if>
+                <if test="permission.assigned==2">
+                    <if test="permission.groupId!=null">
+                        and group_id=#{permission.groupId}
+                    </if>
+                    and not EXISTS (select * from sa_role_permission srp where srp.role_id=#{permission.roleId}
+                    and sp.id=srp.permission_id)
+                </if>
+            </when>
+            <otherwise>
+                <if test="permission.resoureId !=null">
+                    left join sa_permission_resource spr on sp.id=spr.permission_id where
+                    spr.resource_id=#{permission.resoureId}
+                </if>
+                where 1=1
+                <if test="permission.id !=null">
+                    and id=#{permission.id}
+                </if>
+                <if test="permission.groupId !=null">
+                    and group_id=#{permission.groupId}
+                </if>
+                <if test="permission.permissionName !=null and permission.permissionName!='' ">
+                    and permission_name=#{permission.permissionName}
+                </if>
+                <if test="permission.manager !=null">
+                    and is_manager=#{permission.manager}
+                </if>
+                <if test="permission.enable !=null">
+                    and enable=#{permission.enable}
+                </if>
+                <if test="permission.createBy !=null">
+                    and create_by=#{permission.createBy}
+                </if>
+                <if test="permission.createTime !=null">
+                    and create_time=#{permission.createTime}
+                </if>
+                <if test="permission.updateBy !=null">
+                    and update_by=#{permission.updateBy}
+                </if>
+                <if test="permission.updateTime !=null">
+                    and update_time=#{permission.updateTime}
+                </if>
+                <if test="permission.groupIdList !=null and permission.groupIdList.size>0">
+                    and group_id in
+                    <foreach collection="permission.groupIdList" item="groupId" open="(" separator="," close=")">
+                        #{groupId}
+                    </foreach>
+                </if>
+            </otherwise>
+        </choose>
+        and  (sp.is_default is null or sp.is_default=false)
+        order by sp.permission_name,sp.id
+    </select>
+    <select id="getPermissionStrByUserId" resultType="java.lang.String">
+        SELECT
+        permissionNameStr
+        FROM
+        (
+        SELECT
+        substr( group_concat( permission_name ), 2, LENGTH ( group_concat( permission_name ) ) - 2 ) AS permissionNameStr
+        FROM
+        sa_permission sr
+        LEFT JOIN sa_role_permission srp ON sr.ID = srp.permission_id
+        LEFT JOIN sa_user_role sur ON srp.role_id = sur.role_id
+        WHERE 1 = 1
+        <if test="userId!=null">
+            AND sur.user_id = #{userId}
+        </if>
+        ) res
+        WHERE
+        permissionNameStr != '{}'
+    </select>
+    <insert id="addPermission" parameterType="com.yinhe.ec.cpps.sys.model.Permission" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sa_permission (group_id, permission_name, is_manager, enable, create_by, create_time)
+        values (#{permission.groupId}, #{permission.permissionName}, #{permission.manager}, #{permission.enable},
+                #{permission.createBy}, now())
+    </insert>
+    <!--根据主键批量删除saPermission-->
+    <delete id="batchDelete" parameterType="com.yinhe.ec.cpps.sys.model.Permission">
+        delete
+        from sa_permission
+        where 1=1
+        <if test="null!=idList and idList.size>0">
+            and id in
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

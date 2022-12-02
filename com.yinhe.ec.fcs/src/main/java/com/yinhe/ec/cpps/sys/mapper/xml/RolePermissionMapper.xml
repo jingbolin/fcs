@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.RolePermissionMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.RolePermission" id="rolePermissionMap">
+        <result property="roleId" column="role_id"/>
+        <result property="permissionId" column="permission_id"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                                        role_id,
+                                            permission_id
+                    </sql>
+
+    <select id="queryRolePermissionList" parameterType="com.yinhe.ec.cpps.sys.model.RolePermission"
+            resultMap="rolePermissionMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_role_permission
+        where 1=1
+        <if test="rolePermission.roleId !=null">
+            and role_id=#{rolePermission.roleId}
+        </if>
+        <if test="rolePermission.permissionId !=null">
+            and permission_id=#{rolePermission.permissionId}
+        </if>
+    </select>
+    <insert id="insertRolePermission" parameterType="com.yinhe.ec.cpps.sys.model.RolePermission">
+        insert into sa_role_permission
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="rolePermission.roleId !=null and (rolePermission.permissionId !=null or (rolePermission.permissionIds !=null  and rolePermission.permissionIds.size>0))">
+                role_id,permission_id
+            </if>
+        </trim>
+        values
+        <if test="rolePermission.roleId !=null  and rolePermission.permissionIds !=null  and rolePermission.permissionIds.size>0">
+            <foreach collection="rolePermission.permissionIds" item="permissionId" separator=",">
+                <trim prefix="(" suffix=")">
+                    #{rolePermission.roleId},#{permissionId}
+                </trim>
+            </foreach>
+        </if>
+        <if test="rolePermission.roleId !=null and rolePermission.permissionId !=null">
+            <trim prefix="(" suffix=")">
+                #{rolePermission.roleId},#{rolePermission.permissionId}
+            </trim>
+        </if>
+    </insert>
+    <delete id="delete" parameterType="com.yinhe.ec.cpps.sys.model.RolePermission">
+        delete from sa_role_permission  where role_id=#{roleId}
+    </delete>
+</mapper>

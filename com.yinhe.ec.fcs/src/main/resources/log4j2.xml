@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="Debug" monitorInterval="30">
+	<properties>
+		<property name="LOG_HOME">logs</property>
+		<!-- 日志备份目录 -->
+		<property name="SERVER_NAME">sys</property>
+		<property name="PRODUCT_NAME">fcs</property>
+	</properties>
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %level [%C{1.}.%M:%L] - %msg%n" />
+		</Console>
+
+		<!-- SERVER日志 -->
+		<RollingFile name="SERVER"
+			fileName="${LOG_HOME}/${SERVER_NAME}/${SERVER_NAME}.log"
+			filePattern="${LOG_HOME}/${SERVER_NAME}/${SERVER_NAME}-%d{yyyy-MM-dd}-%i.log">
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %level [%C{1.}.%M:%L] - %msg%n" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+			</Policies>
+			<Filters>
+				<ThresholdFilter level="error" onMatch="ACCEPT"
+					onMismatch="DENY" />
+			</Filters>
+			<DefaultRolloverStrategy>
+				<!-- 删除指定目录下30天之前的日志 -->
+				<Delete basePath="${LOG_HOME}" maxDepth="2">
+					<IfFileName glob="*/*.log" />
+					<IfLastModified age="30d" />
+				</Delete>
+			</DefaultRolloverStrategy>
+		</RollingFile>
+
+		<!-- PRODUCT日志 -->
+		<RollingRandomAccessFile name="PRODUCT"
+			fileName="${LOG_HOME}/${PRODUCT_NAME}/${PRODUCT_NAME}.log"
+			filePattern="${LOG_HOME}/${PRODUCT_NAME}/${PRODUCT_NAME}-%d{yyyy-MM-dd}-%i.log">
+			<PatternLayout
+				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %level [%C{1.}.%M:%L] - %msg%xEx%n" />
+			<Policies>
+				<SizeBasedTriggeringPolicy size="10MB" />
+			</Policies>
+			<DefaultRolloverStrategy max="15">
+                <!-- 删除指定目录下30天之前的日志 -->
+                <Delete basePath="${LOG_HOME}" maxDepth="2">
+                    <IfFileName glob="*/*.log" />
+                    <IfLastModified age="30d" />
+                </Delete>
+			</DefaultRolloverStrategy>
+		</RollingRandomAccessFile>
+	</Appenders>
+
+	<loggers>
+		<logger name="io.netty" level="warn" />
+		<logger name="io.lettuce" level="warn" />
+		<logger name="springfox" level="warn" />
+		<logger name="io.swagger" level="warn" />
+		<logger name="org.redisson" level="warn" />
+		<logger name="com.atomikos" level="warn" />
+        <logger name="org.apache.shiro" level="warn" />
+		<logger name="org.apache.ibatis" level="warn" />
+        <logger name="org.apache.shardingsphere" level="warn" />
+		<logger name="org.springframework" level="warn" />
+		<logger name="serviceStatsLog" level="warn" />
+		<logger name="org.mybatis.spring" level="warn" />
+		<Logger name="com.yinhe.ec" level="info">
+			<AppenderRef ref="PRODUCT" />
+		</Logger>
+		<Root level="info">
+			<AppenderRef ref="Console" />
+			<AppenderRef ref="SERVER" />
+		</Root>
+	</loggers>
+</Configuration>

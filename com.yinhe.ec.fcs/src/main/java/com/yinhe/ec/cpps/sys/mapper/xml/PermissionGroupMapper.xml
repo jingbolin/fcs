@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.PermissionGroupMapper">
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_permission_group
+        <where>
+            <if test="cm.name != null and cm.name != ''">
+                and name=#{cm.name}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or name like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.PermissionGroup" id="permissionGroupMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                                        id,
+                                            name
+                    </sql>
+
+    <select id="queryPermissionGroupList" parameterType="com.yinhe.ec.cpps.sys.model.PermissionGroup"
+            resultMap="permissionGroupMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_permission_group
+        where 1=1
+        <if test="permissionGroup.id !=null">
+            and id=#{permissionGroup.id}
+        </if>
+        <if test="permissionGroup.name !=null and permissionGroup.name!='' ">
+            and name=#{permissionGroup.name}
+        </if>
+    </select>
+
+    <insert id="addPermissionGroup" parameterType="com.yinhe.ec.cpps.sys.model.PermissionGroup"
+            useGeneratedKeys="true"
+            keyProperty="id">
+    insert into sa_permission_group (name) values (#{permissionGroup.name})
+    </insert>
+    <!--根据条件修改权限分组-->
+    <update id="updatePermissionGroup">
+        update sa_permission_group
+        <set>
+            <if test="permissionGroup.name!=null and permissionGroup.name!=''">
+                name=#{permissionGroup.name},
+            </if>
+        </set>
+        where id=#{permissionGroup.id}
+    </update>
+    <!--根据主键批量删除saPermissionGroup-->
+    <delete id="batchDelete" parameterType="com.yinhe.ec.cpps.sys.model.PermissionGroup">
+        delete
+        from sa_permission_group
+        where 1=1
+        <if test="null!=idList and idList.size>0">
+            and id in
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

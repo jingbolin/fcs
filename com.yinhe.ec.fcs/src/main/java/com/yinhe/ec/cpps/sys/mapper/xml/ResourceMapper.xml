@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.ResourceMapper">
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_resource
+        <where>
+            <if test="cm.typeCode != null and cm.typeCode != ''">
+                and type_code=#{cm.typeCode}
+            </if>
+            <if test="cm.groupId != null and cm.groupId != ''">
+                and group_id=#{cm.groupId}
+            </if>
+            <if test="cm.name != null and cm.name != ''">
+                and name=#{cm.name}
+            </if>
+            <if test="cm.uri != null and cm.uri != ''">
+                and uri=#{cm.uri}
+            </if>
+            <if test="cm.isManager != null and cm.isManager != ''">
+                and is_manager=#{cm.isManager}
+            </if>
+            <if test="cm.isDefault != null and cm.isDefault != ''">
+                and is_default=#{cm.isDefault}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or type_code like CONCAT('%',#{cm.keyword},'%')
+                or group_id like CONCAT('%',#{cm.keyword},'%')
+                or name like CONCAT('%',#{cm.keyword},'%')
+                or uri like CONCAT('%',#{cm.keyword},'%')
+                or is_manager like CONCAT('%',#{cm.keyword},'%')
+                or is_default like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.Resource" id="resourceMap">
+        <result property="id" column="id"/>
+        <result property="typeCode" column="type_code"/>
+        <result property="groupId" column="group_id"/>
+        <result property="name" column="name"/>
+        <result property="uri" column="uri"/>
+        <result property="isManager" column="is_manager"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="enable" column="enable"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        sr.id,
+                                            sr.type_code,
+                                            sr.group_id,
+                                            sr.name,
+                                            sr.uri,
+                                            sr.is_manager,
+                                            sr.is_default,
+                                            sr.enable,
+                                            sr.create_by,
+                                            (CASE WHEN sr.create_by  is not NULL THEN (SELECT user_name FROM sa_user WHERE id = sr.create_by) ELSE NULL END ) AS createUserName,
+                                            sr.create_time,
+                                            DATE_FORMAT(sr.create_time, '%Y-%m-%d %H:%i:%s') as createTimeStr,
+                                            sr.update_by,
+                                            (CASE WHEN sr.update_by is  not NULL THEN ( SELECT user_name FROM sa_user WHERE id = sr.update_by ) ELSE NULL END ) AS updateUserName,
+                                            sr.update_time,
+                                            DATE_FORMAT(sr.update_time, '%Y-%m-%d %H:%i:%s') as updateTimeStr
+    </sql>
+
+    <select id="queryResourceList" parameterType="com.yinhe.ec.cpps.sys.model.Resource"
+            resultMap="resourceMap">
+        select DISTINCT
+        <if test="resource.relevancePerm!=null and resource.relevancePerm==1">
+            sp.id as permissionId,
+            sp.permission_name as permissionName,
+        </if>
+        <include refid="Base_Column_List"></include>
+        from sa_resource sr
+        <if test="resource.permissionId !=null and resource.groupId !=null and (resource.assigned==1 or resource.assigned==2)">
+            LEFT join sa_permission_resource spr on sr.id=spr.resource_id
+        </if>
+        <if test="resource.relevancePerm!=null and resource.relevancePerm==1">
+            left join sa_permission_resource spr on sr.id=spr.resource_id left join sa_permission sp on
+            spr.permission_id=sp.id
+        </if>
+        where 1=1
+        <choose>
+            <when test="resource.assigned==1 or resource.assigned==2">
+                <if test="resource.permissionId !=null and resource.groupId!=null and resource.assigned==1">
+                    and spr.permission_id=#{resource.permissionId}
+                </if>
+                <if test="resource.permissionId !=null and resource.groupId!=null and resource.assigned==2">
+                    and group_id = #{resource.groupId}
+                    and NOT EXISTS ( SELECT * FROM sa_permission_resource spr WHERE spr.permission_id =
+                    #{resource.permissionId} AND sr.id = spr.resource_id )
+                </if>
+            </when>
+            <otherwise>
+                <if test="resource.relevancePerm!=null and resource.relevancePerm==1 and resource.permissionIdList!=null and resource.permissionIdList.size>0">
+                    and spr.permission_id in
+                    <foreach collection="resource.permissionIdList" item="permissionId" open="(" close=")"
+                             separator=",">
+                        #{permissionId}
+                    </foreach>
+                </if>
+                <if test="resource.id !=null">
+                    and id=#{resource.id}
+                </if>
+                <if test="resource.typeCode !=null and resource.typeCode!='' ">
+                    and type_code=#{resource.typeCode}
+                </if>
+                <if test="resource.groupId !=null">
+                    and group_id=#{resource.groupId}
+                </if>
+                <if test="resource.name !=null and resource.name!='' ">
+                    and name=#{resource.name}
+                </if>
+                <if test="resource.uri !=null and resource.uri!='' ">
+                    and uri=#{resource.uri}
+                </if>
+                <if test="resource.isManager !=null">
+                    and is_manager=#{resource.isManager}
+                </if>
+                <if test="resource.isDefault !=null">
+                    and is_default=#{resource.isDefault}
+                </if>
+                <if test="resource.enable !=null">
+                    and enable=#{resource.enable}
+                </if>
+                <if test="resource.createBy !=null">
+                    and create_by=#{resource.createBy}
+                </if>
+                <if test="resource.createTime !=null">
+                    and create_time=#{resource.createTime}
+                </if>
+                <if test="resource.updateBy !=null">
+                    and update_by=#{resource.updateBy}
+                </if>
+                <if test="resource.updateTime !=null">
+                    and update_time=#{resource.updateTime}
+                </if>
+                <if test="resource.groupIdList !=null and resource.groupIdList.size>0">
+                    and group_id in
+                    <foreach collection="resource.groupIdList" open="(" separator="," close=")" item="groupId">
+                        #{groupId}
+                    </foreach>
+                </if>
+            </otherwise>
+        </choose>
+
+
+    </select>
+    
+    <select id="queryResourceModuleList" resultType="java.lang.String">
+        SELECT
+		    DISTINCT sr.uri
+		FROM
+		    sa_resource sr
+		    LEFT JOIN sa_menu sm ON sm.resource_id = sr.id
+		    LEFT JOIN sa_permission_resource spr ON sr.ID = spr.resource_id
+		    LEFT JOIN sa_role_permission srp ON spr.permission_id = srp.permission_id
+		    LEFT JOIN sa_user_role sur ON srp.role_id = sur.role_id
+		    LEFT JOIN sa_user su ON sur.user_id = su.id
+		WHERE
+		    (
+                sr.type_code = '1'
+		        AND sm.`enable` = 1 
+            )
+            or
+		    (
+			    sr.type_code = '2'
+			    AND su.account = #{account}
+		    )
+    </select>
+    
+    <select id="getSaResourcesStr" resultType="java.lang.String">
+        <choose>
+            <when test="resource !=null and ((resource.userId!=null and resource.userId==1) or (resource.account!=null and resource.account=='admin') or resource.isDefault==true)">
+                SELECT
+                uriStr
+                FROM
+                (
+                SELECT
+               		group_concat(DISTINCT URI) AS uriStr 
+                FROM
+                sa_resource sr
+                where 1=1
+            </when>
+            <otherwise>
+                SELECT
+                replace(replace(uriStr,'}','' ),'{','') uriStr
+                FROM
+                (
+                SELECT
+	                group_concat(DISTINCT URI) AS uriStr 
+                FROM
+                sa_resource sr
+                LEFT JOIN sa_permission_resource spr ON sr.ID = spr.resource_id
+                LEFT JOIN sa_role_permission srp ON spr.permission_id = srp.permission_id
+                LEFT JOIN sa_user_role sur ON srp.role_id = sur.role_id
+                LEFT JOIN sa_user su ON sur.user_id = su.id
+                WHERE 1=1
+                <if test="resource !=null and resource.userId!=null">
+                    and sur.user_id = #{resource.userId}
+                </if>
+                <if test="resource !=null and resource.account!=null and resource.account!='' ">
+                    and su.account = #{resource.account}
+                </if>
+            </otherwise>
+        </choose>
+        <if test="resource !=null and resource.typeCode!=null">
+            and sr.type_code = #{resource.typeCode}
+        </if>
+        ) res
+        WHERE
+        uriStr != '{}'
+    </select>
+    <insert id="insertResource" parameterType="com.yinhe.ec.cpps.sys.model.Resource" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into sa_resource
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="resource.typeCode !=null and resource.typeCode!='' ">
+                type_code,
+            </if>
+            <if test="resource.groupId !=null ">
+                group_id,
+            </if>
+            <if test="resource.name !=null and resource.name!='' ">
+                name,
+            </if>
+            <if test="resource.uri !=null and resource.uri!='' ">
+                uri,
+            </if>
+            <if test="resource.isManager !=null ">
+                is_manager,
+            </if>
+            <if test="resource.isDefault !=null ">
+                is_default,
+            </if>
+            <if test="resource.enable !=null ">
+                enable,
+            </if>
+            <if test="resource.createBy !=null ">
+                create_by,
+            </if>
+            create_time
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="resource.typeCode !=null and resource.typeCode!='' ">
+                #{resource.typeCode},
+            </if>
+            <if test="resource.groupId !=null ">
+                #{resource.groupId},
+            </if>
+            <if test="resource.name !=null and resource.name!='' ">
+                #{resource.name},
+            </if>
+            <if test="resource.uri !=null and resource.uri!='' ">
+                #{resource.uri},
+            </if>
+            <if test="resource.isManager !=null ">
+                #{resource.isManager},
+            </if>
+            <if test="resource.isDefault !=null ">
+                #{resource.isDefault},
+            </if>
+            <if test="resource.enable !=null ">
+                #{resource.enable},
+            </if>
+            <if test="resource.createBy !=null ">
+                #{resource.createBy},
+            </if>
+            now()
+        </trim>
+    </insert>
+    <!--根据主键批量删除资源-->
+    <delete id="batchDelete">
+        delete
+        from sa_resource
+        where 1=1
+        <if test="null!=idList and idList.size>0">
+            and id in
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+    <!--根据条件修改资源-->
+    <update id="updateResource" parameterType="com.yinhe.ec.cpps.sys.model.Resource">
+        update sa_resource
+        <set>
+            <if test="typeCode!=null and typeCode!=''">
+                type_code=#{typeCode},
+            </if>
+            <if test="groupId!=null">
+                group_id=#{groupId},
+            </if>
+            <if test="name!=null and name!=''">
+                name=#{name},
+            </if>
+            <if test="uri!=null and uri!=''">
+                uri=#{uri},
+            </if>
+            <if test="isManager!=null">
+                is_manager=#{isManager},
+            </if>
+            <if test="isDefault!=null">
+                is_default=#{isDefault},
+            </if>
+            <if test="enable!=null">
+                enable=#{enable},
+            </if>
+            <if test="createBy!=null">
+                create_by=#{createBy},
+            </if>
+            <if test="createTime!=null">
+                create_time=#{createTime},
+            </if>
+            <if test="updateBy!=null">
+                update_by=#{updateBy},
+            </if>
+            <if test="updateTime!=null">
+                update_time=#{updateTime},
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+</mapper>

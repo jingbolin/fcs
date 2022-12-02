@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.UserRoleMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.UserRole" id="userRoleMap">
+        <result property="userId" column="user_id"/>
+        <result property="roleId" column="role_id"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                                        user_id,
+                                            role_id
+                    </sql>
+
+    <select id="queryUserRoleList" parameterType="com.yinhe.ec.cpps.sys.model.UserRole"
+            resultMap="userRoleMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_user_role
+        where 1=1
+        <if test="userRole.userId !=null">
+            and user_id=#{userRole.userId}
+        </if>
+        <if test="userRole.roleId !=null">
+            and role_id=#{userRole.roleId}
+        </if>
+    </select>
+    <insert id="insertUserRole" parameterType="com.yinhe.ec.cpps.sys.model.UserRole">
+        insert into sa_user_role ( role_id, user_id )
+        values
+        <if test="userRole.roleId !=null  and userRole.userIds !=null  and userRole.userIds.size>0">
+            <foreach collection="userRole.userIds" item="userId" separator=",">
+                <trim prefix="(" suffix=")">
+                    #{userRole.roleId},#{userId}
+                </trim>
+            </foreach>
+        </if>
+        <if test="userRole.roleId !=null and userRole.userId !=null">
+            <trim prefix="(" suffix=")">
+                #{userRole.roleId},#{userRole.userId}
+            </trim>
+        </if>
+        <if test="userRole.userId !=null  and userRole.roleIds !=null  and userRole.roleIds.size>0">
+            <foreach collection="userRole.roleIds" item="roleId" separator=",">
+                <trim prefix="(" suffix=")">
+                    #{roleId},#{userRole.userId}
+                </trim>
+            </foreach>
+        </if>
+    </insert>
+    <delete id="deleteUserRole" parameterType="com.yinhe.ec.cpps.sys.model.UserRole">
+        delete from sa_user_role where 1=1
+        <if test="userRole.userId!=null">
+            and user_id=#{userRole.userId}
+        </if>
+        <if test="userRole.roleId!=null">
+            and role_id=#{userRole.roleId}
+        </if>
+        <if test="userRole.userIds!=null and userRole.userIds.size>0">
+            and user_id in
+            <foreach collection="userRole.userIds" open="(" separator="," close=")" item="userId">
+                #{userId}
+            </foreach>
+        </if>
+        <if test="userRole.roleIds!=null and userRole.roleIds.size>0">
+            and role_id in
+            <foreach collection="userRole.roleIds" open="(" separator="," close=")" item="roleId">
+                #{roleId}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

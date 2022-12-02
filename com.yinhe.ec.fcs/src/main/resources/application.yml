@@ -1,0 +1,27 @@
+# Tomcat
+server:
+  port: 8080
+  tomcat:
+    max-threads: 1000
+    min-spare-threads: 30
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types: application/json,application/xml,application/octet-stream,text/html,text/xml,text/plain,text/css,text/javascript
+# mysql
+spring:
+  # 环境 dev|test|prod
+  profiles:
+    active: dev
+  # jackson时间格式化
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  thymeleaf:
+    cache: false
+  session:
+    store-type: none
+  servlet:
+        multipart:
+            max-file-size: 10MB
+            max-request-size: 50MB

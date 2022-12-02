@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.PermissionResourceMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.PermissionResource" id="permissionResourceMap">
+        <result property="permissionId" column="permission_id"/>
+        <result property="resourceId" column="resource_id"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                                        permission_id,
+                                            resource_id
+                    </sql>
+
+    <select id="queryPermissionResourceList" parameterType="com.yinhe.ec.cpps.sys.model.PermissionResource"
+            resultMap="permissionResourceMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_permission_resource
+        where 1=1
+        <if test="permissionResource.permissionId !=null">
+            and permission_id=#{permissionResource.permissionId}
+        </if>
+        <if test="permissionResource.resourceId !=null">
+            and resource_id=#{permissionResource.resourceId}
+        </if>
+    </select>
+    <insert id="insertPermissionResource" parameterType="com.yinhe.ec.cpps.sys.model.PermissionResource">
+        insert into sa_permission_resource
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="permissionResource.permissionId !=null and (permissionResource.resourceId !=null or (permissionResource.resourceIds !=null  and permissionResource.resourceIds.length>0))">
+                permission_id,resource_id
+            </if>
+        </trim>
+        values
+        <if test="permissionResource.permissionId !=null and permissionResource.resourceIds !=null  and permissionResource.resourceIds.length>0">
+            <foreach collection="permissionResource.resourceIds" item="resId" separator=",">
+                <trim prefix="(" suffix=")">
+                    #{permissionResource.permissionId},#{resId}
+                </trim>
+            </foreach>
+        </if>
+        <if test="permissionResource.permissionId !=null and permissionResource.resourceId !=null">
+            <trim prefix="(" suffix=")">
+                #{permissionResource.permissionId},#{permissionResource.resourceId}
+            </trim>
+        </if>
+    </insert>
+
+    <delete id="deletePermissionResource" parameterType="com.yinhe.ec.cpps.sys.model.PermissionResource">
+        delete from sa_permission_resource where 1=1
+        <if test="permissionResource.permissionId !=null">
+            and permission_id = #{permissionResource.permissionId}
+        </if>
+        <if test="permissionResource.resourceIds !=null  and permissionResource.resourceIds.length>0">
+            and resource_id in
+            <foreach collection="permissionResource.resourceIds" item="resId" open="(" close=")" separator=",">
+                #{resId}
+            </foreach>
+        </if>
+        <if test="permissionResource.resourceId !=null">
+            and resource_id = #{permissionResource.resourceId !=null}
+        </if>
+    </delete>
+    <update id="updatePermissionResource" parameterType="com.yinhe.ec.cpps.sys.model.PermissionResource">
+        update sa_permission_resource where 1=1
+        <if test="permissionResource.permissionId !=null">
+            and permission_id=#{permissionResource.permissionId}
+        </if>
+        <if test="permissionResource.resourceId !=null">
+            and resource_id=#{permissionResource.resourceId}
+        </if>
+
+    </update>
+</mapper>

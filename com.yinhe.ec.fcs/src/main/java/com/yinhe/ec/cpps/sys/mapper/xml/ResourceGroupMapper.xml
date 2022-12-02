@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.yinhe.ec.cpps.sys.mapper.ResourceGroupMapper">
+
+    <select id="selectIdPage" resultType="java.lang.Long" useCache="false">
+        select id from sa_resource_group
+        <where>
+            <if test="cm.name != null and cm.name != ''">
+                and name=#{cm.name}
+            </if>
+            <if test="cm.keyword != null and cm.keyword != ''">
+                and (
+                or name like CONCAT('%',#{cm.keyword},'%')
+                )
+            </if>
+        </where>
+        <if test="cm.orderBy != null and cm.orderBy != ''">
+            order by ${cm.orderBy}
+        </if>
+        <if test="cm.sortAsc != null and cm.sortAsc != ''">
+            ${cm.sortAsc}
+        </if>
+    </select>
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.yinhe.ec.cpps.sys.model.ResourceGroup" id="resourceGroupMap">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+                                        id,
+                                            name
+                    </sql>
+
+    <select id="queryResourceGroupList" parameterType="com.yinhe.ec.cpps.sys.model.ResourceGroup"
+            resultMap="resourceGroupMap">
+        select
+        <include refid="Base_Column_List"></include>
+        from sa_resource_group
+        where 1=1
+        <if test="resourceGroup.id !=null">
+            and id=#{resourceGroup.id}
+        </if>
+        <if test="resourceGroup.name !=null and resourceGroup.name!='' ">
+            and name=#{resourceGroup.name}
+        </if>
+    </select>
+    <insert id="addResourceGroup" parameterType="com.yinhe.ec.cpps.sys.model.ResourceGroup" useGeneratedKeys="true"
+            keyProperty="id">
+            insert into sa_resource_group (name) values (#{resourceGroup.name})
+    </insert>
+    <!--根据条件修改资源分组-->
+    <update id="updateResourceGroup">
+        update sa_resource_group
+        <set>
+            <if test="resourceGroup.name!=null and resourceGroup.name!=''">
+                name=#{resourceGroup.name},
+            </if>
+        </set>
+        where id=#{resourceGroup.id}
+    </update>
+    <delete id="batchDelete">
+        delete
+        from sa_resource_group
+        where 1=1
+        <if test="null!=idList and idList.size>0">
+            and id in
+            <foreach collection="idList" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </delete>
+</mapper>

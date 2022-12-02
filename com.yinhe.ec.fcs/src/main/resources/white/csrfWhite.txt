@@ -1,0 +1,6 @@
+/favicon.ico
+/doc.html
+/swagger-ui.html
+/webjars
+/v2/api-docs
+/swagger-resources
