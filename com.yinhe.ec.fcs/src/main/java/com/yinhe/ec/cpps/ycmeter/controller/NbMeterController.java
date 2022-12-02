@@ -46,6 +46,7 @@ public class NbMeterController {
     @ResponseBody
     public List<NbMeterInfo> getNbMeterListByClause(String orders) {
         return this.nbMeterService.getNbMeterListByClause(orders);
+
     }
 
     @ApiOperation(value = "新增设备", notes = "新增设备", response = ApiResult.class)
