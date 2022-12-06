@@ -44,12 +44,16 @@
 			<groupId>net.sourceforge.jexcelapi</groupId>
 			<artifactId>jxl</artifactId>
 			<version>2.6.12</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/libs/jxl.jar</systemPath>
 		</dependency>
 		<!-- 引入org.json所需依赖 -->
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json-lib</artifactId>
 			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/libs/json-lib.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>org.jdom</groupId>
@@ -57,6 +61,14 @@
 			<version>1.0</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/src/main/resources/libs/jdom.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>com.thoughtworks.xstream</groupId>
+			<artifactId>xstream</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/libs/xstream-1.4.8.jar</systemPath>
 		</dependency>
 
 
